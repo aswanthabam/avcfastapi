@@ -25,17 +25,21 @@ from ..middlewares.process_time_middleware import ProcessingTimeMiddleware
 from ...settings import settings
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("AVC CORE:: Cooking ...")
-    yield
-    print("AVC CORE:: Cooked !")
+def create_app(apps_dir: str = "apps", on_startup=None, on_shutdown=None):
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        if on_startup:
+            await on_startup()
+        print("AVC CORE:: Cooking ...")
+        yield
+        if on_shutdown:
+            await on_shutdown()
+        print("AVC CORE:: Cooked !")
 
-def create_app():
     app = FastAPI(lifespan=lifespan, default_response_class=CustomORJSONResponse)
 
-    router = autoload_routers("apps")
+    router = autoload_routers(apps_dir)
 
     app.include_router(router=router)
 
@@ -64,3 +68,5 @@ def create_app():
         return HTMLResponse(
             content="<html><h1>Haa shit! My Code is working.</h1></html>"
         )
+
+    return app
