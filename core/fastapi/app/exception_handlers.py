@@ -6,7 +6,7 @@ from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import StatementError, IntegrityError
 
-from core.exception.core import AbstractException
+from ...exception.core import AbstractException
 
 
 async def abstract_exception_handler(request: Request, exc: AbstractException):

@@ -1,4 +1,4 @@
-from core.exception.core import AbstractException
+from .core import AbstractException
 
 
 class NotFoundException(AbstractException):

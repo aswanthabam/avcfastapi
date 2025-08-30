@@ -10,8 +10,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
 from sqlalchemy.exc import StatementError, IntegrityError
 
-from core.exception.core import AbstractException
-from core.fastapi.app.exception_handlers import (
+from ...exception.core import AbstractException
+from ..app.exception_handlers import (
     abstract_exception_handler,
     exception_handler,
     integrity_error_handler,
@@ -19,10 +19,10 @@ from core.fastapi.app.exception_handlers import (
     statement_error_handler,
     validation_exception_handler,
 )
-from core.fastapi.response.response_class import CustomORJSONResponse
-from core.fastapi.loaders.router import autoload_routers
-from core.fastapi.middlewares.process_time_middleware import ProcessingTimeMiddleware
-from core.settings import settings
+from ..response.response_class import CustomORJSONResponse
+from ..loaders.router import autoload_routers
+from ..middlewares.process_time_middleware import ProcessingTimeMiddleware
+from ...settings import settings
 
 
 @asynccontextmanager
