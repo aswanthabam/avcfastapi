@@ -22,7 +22,7 @@ from core.fastapi.app.exception_handlers import (
 from core.fastapi.response.response_class import CustomORJSONResponse
 from core.fastapi.loaders.router import autoload_routers
 from core.fastapi.middlewares.process_time_middleware import ProcessingTimeMiddleware
-from apps.settings import settings
+from core.settings import settings
 
 
 @asynccontextmanager

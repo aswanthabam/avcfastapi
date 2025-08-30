@@ -9,12 +9,6 @@ class CoreSettings(BaseSettings):
     DEBUG: bool = False
     CORS_ORIGINS: list[str] | str
 
-    DATABASE_HOST: str
-    DATABASE_PORT: int
-    DATABASE_USER: str
-    DATABASE_PASSWORD: str
-    DATABASE_NAME: str
-
     @property
     def cors_origins(self) -> list[str]:
         if isinstance(self.CORS_ORIGINS, str):
