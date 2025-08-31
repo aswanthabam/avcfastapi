@@ -1,9 +1,9 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+
+from avcfastapi.core.settings import BaseSettings
 
 
 class SqlalchameySettings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=True, env_prefix="APP_")
-
     DATABASE_HOST: str
     DATABASE_PORT: int
     DATABASE_USER: str

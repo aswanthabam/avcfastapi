@@ -1,9 +1,12 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+from pydantic_settings import BaseSettings as PydanticBaseSettings
+
+
+class BaseSettings(PydanticBaseSettings):
+    model_config = SettingsConfigDict(case_sensitive=True, env_prefix="APP_")
 
 
 class CoreSettings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=True, env_prefix="APP_")
-
     NAME: str
     SECRET_KEY: str
     DEBUG: bool = False

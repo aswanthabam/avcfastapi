@@ -8,15 +8,12 @@ from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
-from sqlalchemy.exc import StatementError, IntegrityError
 
 from ...exception.core import AbstractException
 from ..app.exception_handlers import (
     abstract_exception_handler,
     exception_handler,
-    integrity_error_handler,
     request_validation_exception_handler,
-    statement_error_handler,
     validation_exception_handler,
 )
 from ..response.response_class import CustomORJSONResponse
@@ -59,8 +56,17 @@ def create_app(apps_dir: str = "apps", on_startup=None, on_shutdown=None):
         RequestValidationError, request_validation_exception_handler
     )
     app.add_exception_handler(ValidationError, validation_exception_handler)
-    app.add_exception_handler(StatementError, statement_error_handler)
-    app.add_exception_handler(IntegrityError, integrity_error_handler)
+    try:
+        from sqlalchemy.exc import StatementError, IntegrityError
+        from ..app.exception_handlers import (
+            statement_error_handler,
+            integrity_error_handler,
+        )
+
+        app.add_exception_handler(StatementError, statement_error_handler)
+        app.add_exception_handler(IntegrityError, integrity_error_handler)
+    except ImportError as e:
+        pass
     app.add_exception_handler(Exception, exception_handler)
 
     @app.get("/api/ping", summary="Ping the API", tags=["Health Check"])

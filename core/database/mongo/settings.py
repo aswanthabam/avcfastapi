@@ -1,9 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from avcfastapi.core.settings import BaseSettings
 
 
 class MongoSettings(BaseSettings):
-    model_config = SettingsConfigDict(case_sensitive=True, env_prefix="APP_")
-
     DATABASE_URL: str
     DATABASE_NAME: str
 

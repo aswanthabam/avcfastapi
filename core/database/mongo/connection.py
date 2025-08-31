@@ -1,72 +1,55 @@
+from typing import Annotated
+from fastapi.params import Depends
 import motor.motor_asyncio
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from .settings import settings
 
 
-class Connection:
-    _instance = None
-    client: motor.motor_asyncio.AsyncIOMotorClient
-    db: motor.motor_asyncio.AsyncIOMotorDatabase
-    schema: dict[str, dict]
+class _Connection:
+    def __init__(self):
+        """Initialize connection only (without schema)."""
+        self.client = motor.motor_asyncio.AsyncIOMotorClient(settings.DATABASE_URL)
+        self.db = self.client.get_database(name=settings.DATABASE_NAME)
+        self.schema: dict[str, dict] = {}
 
-    def __new__(cls):
-        if cls._instance is None:
-            raise RuntimeError(
-                "Connection not initialized. Call setup_db_schema(schema) first."
-            )
-        return cls._instance
+    async def register_schema(self, schema: dict[str, dict]):
+        """Register schema, collections, and indexes."""
+        self.schema = schema
 
-    @classmethod
-    async def setup_db_schema(cls, schema: dict[str, dict]):
-        """Initialize connection, register collections, and create indexes."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.client = motor.motor_asyncio.AsyncIOMotorClient(
-                settings.DATABASE_URL
-            )
-            cls._instance.db = cls._instance.client.get_database(
-                name=settings.DATABASE_NAME
-            )
-            cls._instance.schema = schema
+        # Register collections dynamically
+        for collection_name in schema.keys():
+            setattr(self, collection_name, self.db.get_collection(collection_name))
 
-            # Register collections dynamically
-            for collection_name in schema.keys():
-                setattr(
-                    cls._instance,
-                    collection_name,
-                    cls._instance.db.get_collection(collection_name),
-                )
+        # Ensure indexes are created
+        await self._setup_indexes()
 
-        # Always ensure indexes are created (idempotent in Mongo)
-        for collection_name, rules in schema.items():
-            collection = getattr(cls._instance, collection_name)
+    async def _setup_indexes(self):
+        """Ensure indexes are created (idempotent)."""
+        for collection_name, rules in self.schema.items():
+            collection = getattr(self, collection_name)
 
             for unique_fields in rules.get("unique", []):
-                await cls._create_unique_index(collection, unique_fields)
+                await self._create_unique_index(collection, unique_fields)
 
             for index_fields in rules.get("index", []):
-                await cls._create_index(collection, index_fields)
+                await self._create_index(collection, index_fields)
 
-        return cls._instance
-
-    @staticmethod
-    async def _create_unique_index(collection, fields: list[str]):
+    async def _create_unique_index(self, collection, fields: list[str]):
         try:
             await collection.create_index(
                 [(field, pymongo.ASCENDING) for field in fields], unique=True
             )
         except DuplicateKeyError:
-            print("WAR: Unique index already exists.")
+            print(f"WAR: Unique index already exists for {collection.name}: {fields}")
 
-    @staticmethod
-    async def _create_index(collection, fields: list[str]):
+    async def _create_index(self, collection, fields: list[str]):
         try:
             await collection.create_index(
                 [(field, pymongo.ASCENDING) for field in fields]
             )
         except DuplicateKeyError:
-            print("WAR: Index already exists.")
+            print(f"WAR: Index already exists for {collection.name}: {fields}")
 
     def close(self):
         self.client.close()
@@ -76,3 +59,11 @@ class Connection:
 
     def __getattr__(self, item: str):
         return self.db.get_collection(item)
+
+
+connection = _Connection()
+
+register_schema = connection.register_schema
+close_connection = connection.close
+
+ConnectionDependency = Annotated[_Connection, Depends(lambda: connection)]

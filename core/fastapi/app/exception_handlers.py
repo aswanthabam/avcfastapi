@@ -4,7 +4,6 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
-from sqlalchemy.exc import StatementError, IntegrityError
 
 from ...exception.core import AbstractException
 
@@ -57,14 +56,14 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
     )
 
 
-async def statement_error_handler(request: Request, exc: StatementError):
+async def statement_error_handler(request: Request, exc):
     if isinstance(exc.orig, AbstractException):
         raise exc.orig
     else:
         raise exc
 
 
-async def integrity_error_handler(request: Request, exc: IntegrityError):
+async def integrity_error_handler(request: Request, exc):
     traceback.print_exc()
     return ORJSONResponse(
         {
