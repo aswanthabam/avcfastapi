@@ -32,3 +32,6 @@ class GoogleAuthUtils:
             raise HTTPException(
                 status_code=502, detail="Invalid response from Google API"
             )
+
+
+google_auth = GoogleAuthUtils()

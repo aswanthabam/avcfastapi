@@ -110,21 +110,21 @@ class _JWTAuthentication:
 
 
 # --- FACTORY CREATION ---
-_jwt_auth_instance = _JWTAuthentication()
+jwt_auth = _JWTAuthentication()
 
 
 def register_provider(provider: JWTProvider[Any]) -> None:
     """Call this function once at application startup to set the user provider."""
-    _jwt_auth_instance.register_provider(provider)
+    jwt_auth.register_provider(provider)
 
 
-create_access_token = _jwt_auth_instance.create_access_token
-get_password_hash = _jwt_auth_instance.get_password_hash
-verify_password = _jwt_auth_instance.verify_password
+create_access_token = jwt_auth.create_access_token
+get_password_hash = jwt_auth.get_password_hash
+verify_password = jwt_auth.verify_password
 
-require_auth: Callable[..., Awaitable[Any]] = _jwt_auth_instance.get_auth_dependency(
+require_auth: Callable[..., Awaitable[Any]] = jwt_auth.get_auth_dependency(
     required=True
 )
-optional_auth: Callable[..., Awaitable[Optional[Any]]] = (
-    _jwt_auth_instance.get_auth_dependency(required=False)
+optional_auth: Callable[..., Awaitable[Optional[Any]]] = jwt_auth.get_auth_dependency(
+    required=False
 )
