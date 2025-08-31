@@ -7,6 +7,11 @@ from fastapi.encoders import jsonable_encoder
 T = TypeVar("T")
 M = TypeVar("M", bound=BaseModel)
 
+try:
+    from bson import ObjectId
+except ImportError:
+    ObjectId = None
+
 
 class _PaginationParams(BaseModel):
     """Pagination parameters as a Pydantic model"""
@@ -68,7 +73,12 @@ def paginated_response(
     else:
         previous_url = None
 
-    model_dicts = jsonable_encoder(paginated_result)
+    custom_encoders = {}
+
+    if ObjectId:
+        custom_encoders[ObjectId] = str
+
+    model_dicts = jsonable_encoder(paginated_result, custom_encoder=custom_encoders)
 
     validated_items = [schema.model_validate(item_dict) for item_dict in model_dicts]
 

@@ -67,6 +67,12 @@ def create_app(apps_dir: str = "apps", on_startup=None, on_shutdown=None):
         app.add_exception_handler(IntegrityError, integrity_error_handler)
     except ImportError as e:
         pass
+    try:
+        from pymongo.errors import DuplicateKeyError
+
+        app.add_exception_handler(DuplicateKeyError, integrity_error_handler)
+    except ImportError as e:
+        pass
     app.add_exception_handler(Exception, exception_handler)
 
     @app.get("/api/ping", summary="Ping the API", tags=["Health Check"])

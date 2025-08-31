@@ -1,6 +1,6 @@
 import traceback
 import uuid
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 from pydantic import ValidationError
@@ -9,7 +9,13 @@ from ...exception.core import AbstractException
 
 
 async def abstract_exception_handler(request: Request, exc: AbstractException):
-    return ORJSONResponse(exc.to_json(), status_code=exc.status_code)
+    if hasattr(exc, "to_json"):
+        content = exc.to_json()
+    elif isinstance(exc, HTTPException):
+        content = {"detail": exc.detail, "status_code": exc.status_code}
+    else:
+        content = {"detail": str(exc)}
+    return ORJSONResponse(content, status_code=getattr(exc, "status_code", 500))
 
 
 async def custom_auth_exception_handler(request: Request, exc: Exception):
