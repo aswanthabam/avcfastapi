@@ -32,11 +32,17 @@ class _JWTAuthentication:
 
     def __init__(self):
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
         self.optional_oauth2_scheme = OAuth2PasswordBearer(
-            tokenUrl="token", auto_error=False
+            tokenUrl="/api/auth/login", auto_error=False
         )
         self.provider: Optional[JWTProvider[T]] = None
+
+    def set_authentication_url(self, url: str):
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=url)
+        self.optional_oauth2_scheme = OAuth2PasswordBearer(
+            tokenUrl=url, auto_error=False
+        )
 
     def register_provider(self, provider: JWTProvider[T]):
         """Registers the provider that validates token data (e.g., fetches a user)."""
@@ -62,10 +68,7 @@ class _JWTAuthentication:
             )
 
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(
-            to_encode,
-            settings.SECRET_KEY,
-        )
+        encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
         return encoded_jwt
 
     async def verify_access_token(self, token: str) -> T:
@@ -76,9 +79,11 @@ class _JWTAuthentication:
             )
 
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY)
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, verify=True, algorithms=["HS256"]
+            )
         except jwt.InvalidTokenError as e:
-            raise ForbiddenException(detail="Invalid or expired token") from e
+            raise ForbiddenException("Invalid or expired token") from e
 
         return await self.provider.validate_token_data(payload)
 
@@ -120,6 +125,7 @@ def register_provider(provider: JWTProvider[Any]) -> None:
 create_access_token = jwt_auth.create_access_token
 get_password_hash = jwt_auth.get_password_hash
 verify_password = jwt_auth.verify_password
+set_authentication_url = jwt_auth.set_authentication_url
 
 require_auth: Callable[..., Awaitable[Any]] = jwt_auth.get_auth_dependency(
     required=True
