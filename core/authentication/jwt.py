@@ -63,7 +63,8 @@ class _JWTAuthentication:
 
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
-            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+            to_encode,
+            settings.SECRET_KEY,
         )
         return encoded_jwt
 
@@ -75,9 +76,7 @@ class _JWTAuthentication:
             )
 
         try:
-            payload = jwt.decode(
-                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-            )
+            payload = jwt.decode(token, settings.SECRET_KEY)
         except jwt.InvalidTokenError as e:
             raise ForbiddenException(detail="Invalid or expired token") from e
 
