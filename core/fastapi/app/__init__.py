@@ -69,6 +69,9 @@ def create_app(apps_dir: str = "apps", on_startup=None, on_shutdown=None):
         pass
     try:
         from pymongo.errors import DuplicateKeyError
+        from ..app.exception_handlers import (
+            integrity_error_handler,
+        )
 
         app.add_exception_handler(DuplicateKeyError, integrity_error_handler)
     except ImportError as e:
