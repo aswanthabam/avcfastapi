@@ -1,6 +1,6 @@
 from pydantic_settings import SettingsConfigDict
 
-from avcfastapi.core.settings import BaseSettings
+from ...settings import BaseSettings
 
 
 class SqlalchameySettings(BaseSettings):
@@ -19,6 +19,14 @@ class SqlalchameySettings(BaseSettings):
                 if origin.strip()
             ]
         return self.CORS_ORIGINS
+
+    @property
+    def DATABASE_URL(self) -> str:
+        return f"postgresql+asyncpg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
+
+    @property
+    def DATABASE_URL_SYNC(self) -> str:
+        return f"postgresql://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
 
 
 settings = SqlalchameySettings()
