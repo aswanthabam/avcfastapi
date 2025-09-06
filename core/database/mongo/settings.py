@@ -1,4 +1,4 @@
-from avcfastapi.core.settings import BaseSettings
+from ...settings import BaseSettings
 
 
 class MongoSettings(BaseSettings):
