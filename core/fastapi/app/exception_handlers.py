@@ -76,6 +76,7 @@ async def integrity_error_handler(request: Request, exc):
             "message": "Integrity Error",
             "error_code": "INTEGRITY_ERROR",
         },
+        status_code=409,
     )
 
 
